@@ -1,22 +1,28 @@
 package peermanager
 
-import "github.com/UmarFarooq-MP/P2P-GO/src/socket"
+import (
+	"net"
+)
 
 type PeersManager struct {
-	listener  Peer
-	peersList []Peer
+	listener           Peer
+	connectedPeersList []Peer
 }
 
 func (peers *PeersManager) LoadConfigs(path string) {
 	//TODO::once YML is ready we will up it
 	//for now lets use dummy values
-	peers.listener.socket = socket.ConstructSocket("127.0.0.1", "9999")
+	//peers.listener.socket = socket.ConstructSocket("127.0.0.1", "9999")
 }
 
-func (peers *PeersManager) addNewPeerToList(socket socket.Socket) {
-	peers.peersList = append(peers.peersList, Peer{socket: socket})
+func (peers *PeersManager) AddNewPeerToList(connection net.Conn) {
+	//peers.connectedPeersList = append(peers.connectedPeersList, Peer{socket: socket})
 }
 
 func (peers *PeersManager) Listen() {
-	peers.listener.socket.Listen()
+	//peers.listener.socket.Listen()
+}
+
+func Connect(ip string, port string) {
+
 }

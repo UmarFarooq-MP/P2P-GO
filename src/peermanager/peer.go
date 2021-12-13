@@ -1,8 +1,25 @@
 package peermanager
 
-import "github.com/UmarFarooq-MP/P2P-GO/src/socket"
+import (
+	"net"
+)
 
 type Peer struct {
-	socket   socket.Socket
-	Messages []PeerMessage
+	ip       string
+	port     string
+	socket   net.Conn
+	Messages []string
+}
+
+func (peer *Peer) Connect(ip string, port string) bool {
+	peer.socket, _ = net.Dial("tcp", ip+":"+port)
+	return true
+}
+
+func (peer *Peer) Disconnect() {
+	peer.socket.Close()
+}
+
+func ConstructPeer(ip string, port string) Peer {
+	return Peer{ip, port, nil, nil}
 }
