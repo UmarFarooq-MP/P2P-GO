@@ -4,9 +4,19 @@ import (
 	"net"
 )
 
+var peersManagerInstance *PeersManager
+
 type PeersManager struct {
 	listener           Peer
 	connectedPeersList []Peer
+}
+
+func getInstance() *PeersManager {
+	if peersManagerInstance == nil {
+		peersManagerInstance = &PeersManager{Peer{"", "", nil, nil}, nil}
+		return peersManagerInstance
+	}
+	return peersManagerInstance
 }
 
 func (peers *PeersManager) LoadConfigs(path string) {
