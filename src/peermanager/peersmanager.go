@@ -4,19 +4,29 @@ import (
 	"net"
 )
 
-var peersManagerInstance *PeersManager
+var PeersManagerInstance *PeersManager
 
 type PeersManager struct {
-	listener           Peer
+	listener           Listener
 	connectedPeersList []Peer
 }
 
-func getInstance() *PeersManager {
-	if peersManagerInstance == nil {
-		peersManagerInstance = &PeersManager{Peer{"", "", nil, nil}, nil}
-		return peersManagerInstance
+func (peers *PeersManager) ReadMessages() {
+	for _, peer := range peers.connectedPeersList {
+		peer.Read()
 	}
-	return peersManagerInstance
+}
+
+func GetInstance() *PeersManager {
+	if PeersManagerInstance == nil {
+		PeersManagerInstance = &PeersManager{Listener{"", "", false, nil, nil}, nil}
+		return PeersManagerInstance
+	}
+	return PeersManagerInstance
+}
+
+func (peers *PeersManager) ConstructListener(ip string, port string, status bool) {
+	peers.listener.ConstructListener(ip, port, status)
 }
 
 func (peers *PeersManager) LoadConfigs(path string) {
@@ -25,12 +35,16 @@ func (peers *PeersManager) LoadConfigs(path string) {
 	//peers.listener.socket = socket.ConstructSocket("127.0.0.1", "9999")
 }
 
-func (peers *PeersManager) AddNewPeerToList(connection net.Conn) {
-	//peers.connectedPeersList = append(peers.connectedPeersList, Peer{socket: socket})
+func (peers *PeersManager) AddNewPeerToList(connection *net.Conn) {
+	peers.connectedPeersList = append(peers.connectedPeersList, Peer{})
 }
 
 func (peers *PeersManager) Listen() {
-	//peers.listener.socket.Listen()
+	peers.listener.Listen()
+}
+
+func (peers *PeersManager) Accept() {
+	peers.listener.Accept()
 }
 
 func Connect(ip string, port string) {

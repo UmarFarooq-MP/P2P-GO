@@ -1,6 +1,8 @@
 package peermanager
 
 import (
+	"fmt"
+	"github.com/UmarFarooq-MP/P2P-GO/src/triggers"
 	"net"
 )
 
@@ -12,8 +14,10 @@ type Listener struct {
 	newConnection []net.Conn
 }
 
-func ConstructListener(ip string, port string, status bool) Listener {
-	return Listener{ip, port, status, nil, nil}
+func (listener *Listener) ConstructListener(ip string, port string, status bool) {
+	listener.ip = ip
+	listener.port = port
+	listener.status = false
 }
 
 func (listener *Listener) Listen() {
@@ -23,6 +27,8 @@ func (listener *Listener) Listen() {
 func (listener *Listener) Accept() {
 	newConnection, error := listener.socket.Accept()
 	if error != nil {
-		listener.newConnection = append(listener.newConnection, newConnection)
+		fmt.Println("NO :(")
+	} else {
+		triggers.OnNewConnection(newConnection)
 	}
 }
