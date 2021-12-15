@@ -2,7 +2,6 @@ package peermanager
 
 import (
 	"fmt"
-	"github.com/UmarFarooq-MP/P2P-GO/src/triggers"
 	"net"
 )
 
@@ -24,11 +23,11 @@ func (listener *Listener) Listen() {
 	listener.socket, _ = net.Listen("tcp", listener.ip+":"+listener.port)
 }
 
-func (listener *Listener) Accept() {
+func (listener *Listener) Accept(newConnectionChannel chan net.Conn) {
 	newConnection, error := listener.socket.Accept()
 	if error != nil {
 		fmt.Println("NO :(")
 	} else {
-		triggers.OnNewConnection(newConnection)
+		newConnectionChannel <- newConnection
 	}
 }

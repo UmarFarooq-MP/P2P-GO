@@ -22,7 +22,6 @@ func (peer *Peer) Connect(ip string, port string) bool {
 func (peer *Peer) Disconnect() {
 	peer.socket.Close()
 }
-
 func ConstructPeer(ip string, port string) *Peer {
 	return &Peer{ip, port, nil, nil}
 }
