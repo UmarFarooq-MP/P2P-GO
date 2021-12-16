@@ -12,6 +12,7 @@ type Peer struct {
 	port     string
 	socket   net.Conn
 	Messages []string
+	status   bool
 }
 
 func (peer *Peer) Connect(ip string, port string) bool {
@@ -22,14 +23,20 @@ func (peer *Peer) Connect(ip string, port string) bool {
 func (peer *Peer) Disconnect() {
 	peer.socket.Close()
 }
-func ConstructPeer(ip string, port string) *Peer {
-	return &Peer{ip, port, nil, nil}
-}
 
-func (peer *Peer) Read() {
-	one := make([]byte, 1)
-	peer.socket.SetReadDeadline(time.Now())
-	if _, err := peer.socket.Read(one); err == io.EOF {
-		fmt.Printf("Diconnected with address %v\n", peer.socket.RemoteAddr().String())
+func (peer *Peer) Read(newMessageChannel chan string, onDisconnectChannel chan string) {
+	buffer := make([]byte, 512)
+	peer.socket.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
+	n, err := peer.socket.Read(buffer)
+	message := string(buffer[:n])
+
+	if err == io.EOF {
+		onDisconnectChannel <- "Peer Disconnected"
+		peer.status = false
+		fmt.Println("HAHAHAHAH")
 	}
+	if n > 0 {
+		newMessageChannel <- message
+	}
+
 }

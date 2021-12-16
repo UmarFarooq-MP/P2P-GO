@@ -4,19 +4,25 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 var PeersManagerInstance *PeersManager
 
 type PeersManager struct {
-	listener           Listener
-	connectedPeersList []Peer
+	ListenerSocket     Listener
+	ConnectedPeersList []Peer
 }
 
-func (peers *PeersManager) ReadMessages() {
-
-	for _, peer := range peers.connectedPeersList {
-		peer.Read()
+func (peers *PeersManager) ReadMessages(newMessageChannel chan string, onDisconnectChannel chan string) {
+	for {
+		time.Sleep(4 * time.Second)
+		fmt.Println("Reading Messages.................")
+		for index, _ := range peers.ConnectedPeersList {
+			if peers.ConnectedPeersList[index].status == true {
+				peers.ConnectedPeersList[index].Read(newMessageChannel, onDisconnectChannel)
+			}
+		}
 	}
 }
 
@@ -29,7 +35,7 @@ func GetInstance() *PeersManager {
 }
 
 func (peers *PeersManager) ConstructListener(ip string, port string, status bool) {
-	peers.listener.ConstructListener(ip, port, status)
+	peers.ListenerSocket.ConstructListener(ip, port, status)
 }
 
 func (peers *PeersManager) LoadConfigs(path string) {
@@ -41,17 +47,17 @@ func (peers *PeersManager) LoadConfigs(path string) {
 func (peers *PeersManager) AddNewPeerToList(connection net.Conn) {
 	connectionString := connection.RemoteAddr().String()
 	colunIndex := strings.IndexByte(connectionString, ':')
-	peers.connectedPeersList = append(peers.connectedPeersList, Peer{connectionString[:colunIndex], connectionString[colunIndex:], connection, nil})
+	peers.ConnectedPeersList = append(peers.ConnectedPeersList, Peer{connectionString[:colunIndex], connectionString[colunIndex:], connection, nil, true})
 }
 
 func (peers *PeersManager) Listen() {
-	peers.listener.Listen()
+	peers.ListenerSocket.Listen()
 }
 
 func (peers *PeersManager) Accept(newConnectionChannel chan net.Conn) {
 	for {
 		fmt.Println("Accepting Connection .............")
-		peers.listener.Accept(newConnectionChannel)
+		peers.ListenerSocket.Accept(newConnectionChannel)
 	}
 }
 
@@ -61,14 +67,20 @@ func (peers *PeersManager) Connect(ip string, port string) {
 
 func (peers *PeersManager) Processor() {
 	newConnectionChannel := make(chan net.Conn)
-	//newMessageChannel := make(chan Peer)
+	newMessageChannel := make(chan string)
+	onDisconnectChannel := make(chan string)
 	go peers.Accept(newConnectionChannel)
-
+	go peers.ReadMessages(newMessageChannel, onDisconnectChannel)
 	for {
+		time.Sleep(1 * time.Second)
 		select {
 		case newConnection := <-newConnectionChannel:
 			fmt.Printf("New Connection Arrived with address %v \n", newConnection.RemoteAddr())
 			peers.AddNewPeerToList(newConnection)
+		case newMessage := <-newMessageChannel:
+			fmt.Printf("New Message: %v", newMessage)
+		case peerDisconnect := <-onDisconnectChannel:
+			fmt.Printf("Peer Disconnected with with Name %v", peerDisconnect)
 		}
 	}
 }
